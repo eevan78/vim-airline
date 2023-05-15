@@ -5,7 +5,7 @@ scriptencoding utf-8
 
 function! airline#extensions#po#shorten()
   " Format and shorte the output of msgfmt
-  let b:airline_po_stats = substitute(get(b:, 'airline_po_stats', ''), ' \(message\|translation\)s*\.*', '', 'g')
+  let b:airline_po_stats = substitute(get(b:, 'airline_po_stats', ''), ' \(message\|translation\|порук\|превод\)[аеs]*\.*', '', 'g')
   let b:airline_po_stats = substitute(b:airline_po_stats, ', ', '/', 'g')
   if exists("g:airline#extensions#po#displayed_limit")
     let w:displayed_po_limit = g:airline#extensions#po#displayed_limit
@@ -13,7 +13,7 @@ function! airline#extensions#po#shorten()
       let b:airline_po_stats = b:airline_po_stats[0:(w:displayed_po_limit - 2)].(&encoding==?'utf-8' ? '…' : '.')
     endif
   endif
-  if strlen(get(b:, 'airline_po_stats', '')) >= 30 && airline#util#winwidth() < 150
+  if strlen(get(b:, 'airline_po_stats', '')) >= 30 && airline#util#winwidth() < 140
     let fuzzy = ''
     let untranslated = ''
     let messages = ''
@@ -24,16 +24,35 @@ function! airline#extensions#po#shorten()
         let fuzzy = ''
       endif
     endif
+    if b:airline_po_stats =~ 'неј'
+      let fuzzy = substitute(b:airline_po_stats, '.\{-}\(\d\+\) неј.*', '\1Ч', '')
+      if fuzzy == '0Ч'
+        let fuzzy = ''
+      endif
+    endif
     if b:airline_po_stats =~ 'untranslated'
       let untranslated = substitute(b:airline_po_stats, '.\{-}\(\d\+\) untranslated.*', '\1U', '')
       if untranslated == '0U'
         let untranslated = ''
       endif
     endif
+    if b:airline_po_stats =~ 'непрев'
+      let untranslated = substitute(b:airline_po_stats, '.\{-}\(\d\+\) непревед.*', '\1Н', '')
+      if untranslated == '0Н'
+        let untranslated = ''
+      endif
+    endif
+    if b:airline_po_stats =~ 'translated'
     let messages = substitute(b:airline_po_stats, '\(\d\+\) translated.*', '\1T', '')
       if messages ==# '0T'
         let messages = ''
       endif
+    else 
+    let messages = substitute(b:airline_po_stats, '\(\d\+\) преведе.*', '\1П', '')
+      if messages ==# '0П'
+        let messages = ''
+      endif
+    endif
     let b:airline_po_stats = printf('%s%s%s', fuzzy, (empty(fuzzy) || empty(untranslated) ? '' : '/'), untranslated)
     if strlen(b:airline_po_stats) < 10
       let b:airline_po_stats = messages. (!empty(b:airline_po_stats) && !empty(messages) ? '/':''). b:airline_po_stats
